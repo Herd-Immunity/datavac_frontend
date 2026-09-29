@@ -1,10 +1,9 @@
-name: Deploy
+name: Deploy develop
 
 on:
   push:
     branches:
-      - main
-      - devops/test-deploy-main
+      - develop
 
 permissions:
   contents: read
@@ -14,6 +13,7 @@ jobs:
   deploy:
     name: deploy
     runs-on: ubuntu-latest
+    environment: dev
     steps:
       - name: Checkout release revision
         uses: actions/checkout@v5
@@ -50,7 +50,9 @@ jobs:
       - name: Create docker-compose .env file
         env:
           CI_FRONTEND_IMAGE: ${{ steps.image.outputs.name }}:${{ steps.image.outputs.sha_tag }}
-          CI_NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          CI_NEXT_PUBLIC_CLOUDPAYMENTS_PUBLIC_ID: ${{ vars.NEXT_PUBLIC_CLOUDPAYMENTS_PUBLIC_ID }}
+          CI_CLOUDPAYMENTS_API_SECRET: ${{ secrets.CLOUDPAYMENTS_API_SECRET }}
+
         run: |
           set -euo pipefail
           pip3 install dump-env

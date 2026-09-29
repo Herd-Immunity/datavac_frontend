@@ -1,0 +1,94 @@
+name: Deploy prod
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write
+  
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Checkout release revision
+        uses: actions/checkout@v5
+
+      - name: Prepare docker-image metadata
+        id: image
+        env:
+          REPOSITORY: ${{ github.repository }}
+          IMAGE_SHA: ${{ github.sha }}
+        run: |
+          image_name="ghcr.io/${REPOSITORY,,}"
+          echo "name=${image_name}" >> "$GITHUB_OUTPUT"
+          echo "sha_tag=sha-${IMAGE_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Login to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          pull: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
+          tags: |
+            ${{ steps.image.outputs.name }}:${{ steps.image.outputs.sha_tag }}
+            ${{ steps.image.outputs.name }}:latest
+
+      - name: Create docker-compose .env file
+        env:
+          CI_FRONTEND_IMAGE: ${{ steps.image.outputs.name }}:${{ steps.image.outputs.sha_tag }}
+          CI_NEXT_PUBLIC_CLOUDPAYMENTS_PUBLIC_ID: ${{ vars.NEXT_PUBLIC_CLOUDPAYMENTS_PUBLIC_ID }}
+          CI_CLOUDPAYMENTS_API_SECRET: ${{ secrets.CLOUDPAYMENTS_API_SECRET }}
+
+        run: |
+          set -euo pipefail
+          pip3 install dump-env
+          umask 077
+          dump-env \
+            -t .env.example \
+            -p 'CI_' > .env
+
+      - name: Copy deployment bundle to host
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ vars.SSH_DEPLOY_HOST }}
+          username: ${{ secrets.SSH_DEPLOY_USER }}
+          key: ${{ secrets.SSH_DEPLOY_KEY }}
+          source: "."
+          target: "frontend"
+          rm: true
+
+      - name: Pull and restart target stack
+        uses: appleboy/ssh-action@v1
+        env:
+          REGISTRY_HOST: ghcr.io
+          REGISTRY_USERNAME: ${{ github.actor }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          host: ${{ vars.SSH_DEPLOY_HOST }}
+          username: ${{ secrets.SSH_DEPLOY_USER }}
+          key: ${{ secrets.SSH_DEPLOY_KEY }}
+          envs: REGISTRY_HOST,REGISTRY_USERNAME,REGISTRY_TOKEN
+          script: |
+            set -euo pipefail
+            cd ~/frontend
+            printf '%s' "$REGISTRY_TOKEN" | docker login "$REGISTRY_HOST" -u "$REGISTRY_USERNAME" --password-stdin >/dev/null
+            trap 'docker logout "$REGISTRY_HOST" >/dev/null 2>&1 || true' EXIT
+            docker compose -p prod -f docker-compose.yaml -f docker-compose.server.yaml pull -q
+            docker compose -p prod -f docker-compose.yaml -f docker-compose.server.yaml up -d
+            docker compose -p prod -f docker-compose.yaml -f docker-compose.server.yaml ps
+            docker image prune -f
+            
