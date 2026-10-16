@@ -36,10 +36,6 @@ export function mapVaccineInstructionSections(vaccine: Vaccine): VaccineInstruct
     sections.push({ title: 'Показания', content: vaccine.indications })
   }
 
-  if (vaccine.side_effects) {
-    sections.push({ title: 'Побочные эффекты', content: vaccine.side_effects })
-  }
-
   if (vaccine.interaction_info) {
     sections.push({ title: 'Взаимодействие с препаратами', content: vaccine.interaction_info })
   }
