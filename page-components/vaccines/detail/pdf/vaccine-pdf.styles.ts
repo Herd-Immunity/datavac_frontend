@@ -2,18 +2,25 @@ import { StyleSheet } from '@react-pdf/renderer'
 
 export const pdfStyles = StyleSheet.create({
   page: {
-    paddingTop: 15,
+    // Logo sits at y=15 and is 25 tall, so its bottom is 40.
+    // Pages after the first start 70 below that. Page 1 pulls the title back up.
+    paddingTop: 110,
     paddingBottom: 40,
     paddingHorizontal: 34,
     fontSize: 10,
     color: '#111',
     fontFamily: 'Inter Tight',
   },
+  headerFixed: {
+    position: 'absolute',
+    top: 15,
+    left: 34,
+    right: 34,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 5.3,
   },
   brandBlock: {
     flexDirection: 'row',
@@ -60,6 +67,13 @@ export const pdfStyles = StyleSheet.create({
   },
   logo: { width: 78, height: 25 },
   nameBlock: {
+    // 52 - 110: page 1 stays just under the logo; later pages use paddingTop.
+    marginTop: -58,
+    marginBottom: 0,
+  },
+  nameBlockWithQr: {
+    // 120 - 110: page 1 still clears the QR column.
+    marginTop: 10,
     marginBottom: 0,
   },
   h1: {
@@ -297,6 +311,15 @@ export const pdfStyles = StyleSheet.create({
     fontWeight: 600,
     lineHeight: 1.3,
     color: '#323335',
+  },
+  // One blank line between paragraphs (11.5 × 1.3).
+  instructionParagraphGap: {
+    marginTop: 15,
+  },
+  // "• " in Inter Tight SemiBold at 11.5pt is ~7.3pt, so wrapped lines start at the text.
+  instructionBullet: {
+    paddingLeft: 7.3,
+    textIndent: -7.3,
   },
   muted: { fontSize: 9, color: '#666', lineHeight: 1.3 },
   bold: { fontWeight: 700 },

@@ -18,6 +18,7 @@ const INGREDIENT_ROLE_LABELS: Record<string, string> = {
 const CONTRAINDICATION_TYPE_LABELS: Record<string, string> = {
   absolute: 'Абсолютные',
   relative: 'Временные',
+  temporary: 'Временные',
 }
 
 /** Sections already shown in the structured part of the PDF — skip duplicates below the divider. */
@@ -28,6 +29,9 @@ const STRUCTURED_INSTRUCTION_TITLES = new Set([
   'Одновременное введение с другими вакцинами',
   'Хранение',
 ])
+
+/** Present on the vaccine screen, absent from the PDF mockup. */
+const PDF_OMITTED_INSTRUCTION_TITLES = new Set(['Полный текст инструкции'])
 
 function groupIngredientsByRole(
   ingredients: Vaccine['ingredients'],
@@ -96,7 +100,9 @@ export function mapVaccineToPdfData(vaccine: Vaccine): VaccinePdfData {
   const pregnancyAllowed = vaccine.pregnancy_usage_status
 
   const instructionSections = mapVaccineInstructionSections(vaccine).filter(
-    (section) => !STRUCTURED_INSTRUCTION_TITLES.has(section.title),
+    (section) =>
+      !STRUCTURED_INSTRUCTION_TITLES.has(section.title) &&
+      !PDF_OMITTED_INSTRUCTION_TITLES.has(section.title),
   )
 
   return {
