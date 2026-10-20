@@ -15,7 +15,7 @@ export const vaccineCatalogColumns: DataTableColumn<VaccineCatalogItem>[] = [
         <span className="font-semibold leading-tight">{row.name}</span>
         {!row.isAvailable && (
           <span className="text-xs font-semibold text-fg">
-            Вакцина не доступна в РФ
+            Вакцина недоступна в РФ
           </span>
         )}
       </span>
