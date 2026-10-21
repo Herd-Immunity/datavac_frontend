@@ -28,6 +28,7 @@ export interface Vaccine {
   instruction_url: string | null
   age_allowed: string | null
   pregnancy_usage_status: boolean
+  pregnancy_usage_text: string | null
   administration_methods: { code: string | null; age_group: string | null; note: string | null; list_icon_url: string | null; detail_image_url: string | null }[]
   contraindications: { id: number; name: string; type: string }[]
   ingredients: { id: number; name: string; role: string }[]

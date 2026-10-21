@@ -21,19 +21,42 @@ export function mapVaccineInstructionSections(vaccine: Vaccine): VaccineInstruct
       seenCodes.add(key)
       return true
     })
-    .map((m) => (m.code ? ADMINISTRATION_CODE_TO_LABEL[m.code] ?? m.code : m.note!))
+.map((m) => (m.code ? ADMINISTRATION_CODE_TO_LABEL[m.code] ?? m.code : m.note!))
+
+  const contraindicationNames = (vaccine.contraindications ?? []).map(
+    (c) => c.name,
+  )
+
+  if (contraindicationNames.length > 0) {
+    sections.push({
+      title: 'Противопоказания',
+      content: contraindicationNames,
+      variant: 'bullets',
+    })
+  }
 
   if (methodLabels.length > 0) {
     sections.push({
       title: 'Способы введения',
-      content: methodLabels.length === 1
-        ? `Вакцину ${vaccine.name} следует вводить ${methodLabels[0]}.`
-        : methodLabels,
+      content:
+        methodLabels.length === 1
+          ? `Вакцину ${vaccine.name} следует вводить ${methodLabels[0]}.`
+          : methodLabels,
     })
   }
 
-  if (vaccine.indications) {
-    sections.push({ title: 'Показания', content: vaccine.indications })
+  if (vaccine.ingredients_text) {
+    sections.push({
+      title: 'Состав',
+      content: vaccine.ingredients_text,
+    })
+  }
+
+  if (vaccine.pregnancy_usage_text) {
+    sections.push({
+      title: 'Применение при беременности и грудном вскармливании',
+      content: vaccine.pregnancy_usage_text,
+    })
   }
 
   if (vaccine.side_effects) {
@@ -41,7 +64,10 @@ export function mapVaccineInstructionSections(vaccine: Vaccine): VaccineInstruct
   }
 
   if (vaccine.interaction_info) {
-    sections.push({ title: 'Взаимодействие с препаратами', content: vaccine.interaction_info })
+    sections.push({
+      title: 'Взаимодействие с препаратами',
+      content: vaccine.interaction_info,
+    })
   }
 
   if (vaccine.compatibility_info) {
@@ -54,11 +80,6 @@ export function mapVaccineInstructionSections(vaccine: Vaccine): VaccineInstruct
   if (vaccine.storage_conditions) {
     sections.push({ title: 'Хранение', content: vaccine.storage_conditions })
   }
-
-  sections.push({
-    title: 'Полный текст инструкции',
-    content: vaccine.instruction_url || 'Инструкция не доступна',
-  })
 
   return sections
 }
