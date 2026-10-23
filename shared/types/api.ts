@@ -32,6 +32,7 @@ export interface Vaccine {
   administration_methods: { code: string | null; age_group: string | null; note: string | null; list_icon_url: string | null; detail_image_url: string | null }[]
   contraindications: { id: number; name: string; type: string }[]
   ingredients: { id: number; name: string; role: string }[]
+  ingredients_text: string | null
   comment: { source: string | null; text: string | null } | null
   manufacturer: string | null
   storage_conditions: string | null
