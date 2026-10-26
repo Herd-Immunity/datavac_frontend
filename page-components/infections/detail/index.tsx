@@ -1,4 +1,5 @@
 import { fetchAllInfectionIds, fetchInfectionById } from '@/shared/api/infections'
+import { BackLink } from '@/shared/ui/back-link'
 import { notFound } from 'next/navigation'
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -20,9 +21,7 @@ export default async function InfectionDetailPage({ params }: { params: Promise<
 
   return (
     <div>
-      <a href="/infections" className="mb-4 inline-block text-sm text-accent hover:underline">
-        ← Назад к инфекциям
-      </a>
+      <BackLink className="mb-4" />
 
       <h1 className="mb-6 text-2xl font-semibold text-fg">{infection.name}</h1>
 
