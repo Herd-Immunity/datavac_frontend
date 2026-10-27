@@ -11,8 +11,13 @@ export const vaccineCatalogColumns: DataTableColumn<VaccineCatalogItem>[] = [
     width: 200,
     sortable: true,
     render: (row) => (
-      <span className="font-semibold leading-tight">
-        {row.name}
+      <span className="flex flex-col gap-1">
+        <span className="font-semibold leading-tight">{row.name}</span>
+        {!row.isAvailable && (
+          <span className="text-xs font-semibold text-fg">
+            Вакцина недоступна в РФ
+          </span>
+        )}
       </span>
     ),
   },

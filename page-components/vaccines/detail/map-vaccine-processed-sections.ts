@@ -151,13 +151,5 @@ export function mapVaccineProcessedSections(vaccine: Vaccine): ProcessedSection[
     })
   }
 
-  if (vaccine.side_effects) {
-    sections.push({
-      kind: 'text',
-      title: 'Побочные эффекты',
-      text: vaccine.side_effects,
-    })
-  }
-
   return sections
 }
