@@ -38,7 +38,7 @@ export default async function VaccineDetailPage({
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold text-fg">{vaccine.name}</h1>
           {!vaccine.is_available_in_rf && (
-            <p className="text-base font-semibold text-fg">Вакцина не доступна в РФ</p>
+            <p className="text-base font-semibold text-fg">Вакцина недоступна в РФ</p>
           )}
           {vaccine.revision_date && (
             <p className="text-base text-fg-muted">
