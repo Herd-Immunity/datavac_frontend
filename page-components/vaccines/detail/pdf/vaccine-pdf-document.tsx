@@ -8,6 +8,39 @@ type Props = {
   qrImages?: { specialist?: string; nonspec?: string }
 }
 
+function splitInstructionParagraphs(content: string): string[] {
+  return content
+    .split(/\r?\n[ \t]*\r?\n+/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+}
+
+function InstructionBody({ content }: { content: string | string[] }) {
+  if (Array.isArray(content)) {
+    return (
+      <>
+        {content.filter(Boolean).map((item, index) => (
+          <Text key={index} style={[s.text, s.instructionBullet]}>
+            {`• ${item}`}
+          </Text>
+        ))}
+      </>
+    )
+  }
+
+  const paragraphs = splitInstructionParagraphs(content)
+
+  return (
+    <>
+      {paragraphs.map((paragraph, index) => (
+        <Text key={index} style={index === 0 ? s.text : [s.text, s.instructionParagraphGap]}>
+          {paragraph}
+        </Text>
+      ))}
+    </>
+  )
+}
+
 function Section({
   title,
   children,
@@ -38,7 +71,7 @@ function StatusBadge({
     tone === 'danger' ? s.statusIconDanger : tone === 'warn' ? s.statusIconWarn : s.statusIconOk
 
   return (
-    <View style={s.statusRow}>
+    <View style={s.statusRow} wrap={false}>
       <View style={iconStyle}>
         <Text style={s.statusIconText}>{symbol}</Text>
       </View>
@@ -52,6 +85,41 @@ function QrSlot({ src, label }: { src: string; label: string }) {
     <View style={s.qrItem}>
       <Image src={src} style={s.qrImage} />
       <Text style={s.qrLabel}>{label}</Text>
+    </View>
+  )
+}
+
+function PageHeader({
+  logoSrc,
+  qrImages,
+  pageNumber,
+}: {
+  logoSrc: string
+  qrImages?: { specialist?: string; nonspec?: string }
+  pageNumber: number
+}) {
+  const showQr = pageNumber === 1 && Boolean(qrImages?.specialist || qrImages?.nonspec)
+
+  return (
+    <View style={s.header}>
+      <View style={s.brandBlock}>
+        <Image src={logoSrc} style={s.logo} />
+        <Text style={s.brandSubtitle}>
+          {`Структурированная информация с сайта\nГосударственного реестра лекарственных средств`}
+        </Text>
+      </View>
+
+      {showQr ? (
+        <View style={s.qrHeader}>
+          <Text style={s.qrCaption}>Ссылка на версию инструкции для:</Text>
+          <View style={s.qrBlock}>
+            {qrImages?.specialist ? (
+              <QrSlot src={qrImages.specialist} label="Специалистов" />
+            ) : null}
+            {qrImages?.nonspec ? <QrSlot src={qrImages.nonspec} label="Неспециалистов" /> : null}
+          </View>
+        </View>
+      ) : null}
     </View>
   )
 }
@@ -75,30 +143,15 @@ export function VaccinePdfDocument({ data, qrImages }: Props) {
   return (
     <Document title={data.name}>
       <Page size="A4" style={s.page}>
-        <View style={s.header} wrap={false}>
-          <View style={s.brandBlock}>
-            <Image src={data.logoSrc} style={s.logo} />
-            <Text style={s.brandSubtitle}>
-              {`Структурированная информация с сайта\nГосударственного реестра лекарственных средств`}
-            </Text>
-          </View>
+        <View
+          style={s.headerFixed}
+          fixed
+          render={({ pageNumber }) => (
+            <PageHeader logoSrc={data.logoSrc} qrImages={qrImages} pageNumber={pageNumber} />
+          )}
+        />
 
-          {hasQr ? (
-            <View style={s.qrHeader}>
-              <Text style={s.qrCaption}>Ссылка на версию инструкции для:</Text>
-              <View style={s.qrBlock}>
-                {qrImages?.specialist ? (
-                  <QrSlot src={qrImages.specialist} label="Специалистов" />
-                ) : null}
-                {qrImages?.nonspec ? (
-                  <QrSlot src={qrImages.nonspec} label="Неспециалистов" />
-                ) : null}
-              </View>
-            </View>
-          ) : null}
-        </View>
-
-        <View style={s.nameBlock} wrap={false}>
+        <View style={hasQr ? s.nameBlockWithQr : s.nameBlock} wrap={false}>
           <Text style={s.h1}>{data.name}</Text>
 
           {data.officialName ? (
@@ -199,7 +252,7 @@ export function VaccinePdfDocument({ data, qrImages }: Props) {
               </View>
               <View style={s.infoColRight}>
                 {data.interactionInfo ? (
-                  <View style={s.infoBlock}>
+                  <View style={s.infoBlock} wrap={false}>
                     <Text style={s.infoBlockHeading}>Взаимодействие с препаратами</Text>
                     <StatusBadge tone="danger" symbol="×">
                       <Text style={s.statusValue}>{data.interactionInfo}</Text>
@@ -208,6 +261,7 @@ export function VaccinePdfDocument({ data, qrImages }: Props) {
                 ) : null}
                 {data.pregnancyLabel ? (
                   <View
+                    wrap={false}
                     style={
                       data.interactionInfo ? s.infoBlockSpaced : s.infoBlock
                     }
@@ -225,6 +279,7 @@ export function VaccinePdfDocument({ data, qrImages }: Props) {
                 ) : null}
                 {data.compatibilityInfo ? (
                   <View
+                    wrap={false}
                     style={
                       data.interactionInfo || data.pregnancyLabel
                         ? s.infoBlockSpaced
@@ -251,15 +306,7 @@ export function VaccinePdfDocument({ data, qrImages }: Props) {
             </View>
             {instructionSections.map((sec) => (
               <Section key={sec.title} title={sec.title}>
-                {Array.isArray(sec.content) ? (
-                  sec.content.map((line) => (
-                    <Text key={line} style={s.text}>
-                      • {line}
-                    </Text>
-                  ))
-                ) : (
-                  <Text style={s.text}>{sec.content}</Text>
-                )}
+                <InstructionBody content={sec.content} />
               </Section>
             ))}
           </View>
@@ -267,7 +314,7 @@ export function VaccinePdfDocument({ data, qrImages }: Props) {
 
         {data.orgComment ? (
           <View style={s.commentBox}>
-            <Text style={s.commentTitle}>Комментарий АНО «Коллективный иммунитет»:</Text>
+            <Text style={s.commentTitle}>Комментарий АНО «Коллективный иммунитет»</Text>
             <Text style={s.commentBody}>{data.orgComment}</Text>
           </View>
         ) : null}
