@@ -30,7 +30,17 @@ export function VaccineDetailScreenInstruction({ sections }: VaccineDetailScreen
                 {section.title}
               </Heading>
 
-              {contentParts.length === 1 ? (
+              {section.variant === 'bullets' ? (
+                <ul className="mt-3 ml-2 list-disc pl-5">
+                  {contentParts.map((item, index) => (
+                    <li key={`${section.title}-${index}`}>
+                      <Text size="sm" className="text-fg">
+                        {item}
+                      </Text>
+                    </li>
+                  ))}
+                </ul>
+              ) : contentParts.length === 1 ? (
                 <Text size="sm" className="mt-3 text-fg">
                   {contentParts[0]}
                 </Text>

@@ -27,6 +27,8 @@ const STRUCTURED_INSTRUCTION_TITLES = new Set([
   'Взаимодействие с препаратами',
   'Одновременное введение с другими вакцинами',
   'Хранение',
+  'Противопоказания',
+  'Состав',
 ])
 
 function groupIngredientsByRole(
