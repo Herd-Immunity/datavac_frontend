@@ -1,7 +1,6 @@
 'use client';
 
 import { type ReactNode } from 'react'
-import { ArrowsIcon } from '@datavac/ui-kit'
 import { BackLink } from '@/shared/ui/back-link'
 import { Separator } from '@/shared/ui/separator'
 import { resultsLabel } from '@/shared/lib/pluralize'
@@ -10,50 +9,20 @@ type ResultsHeaderProps = {
   title: string;
   count?: number;
   backHref?: string;
-  onBack?: () => void;
   filters?: ReactNode;
   className?: string;
 };
 
-function BackButton({ onBack }: { onBack: () => void }) {
-  return (
-    <button
-      onClick={onBack}
-      className="group flex items-center gap-2 text-fg w-fit"
-      aria-label="Назад"
-    >
-      <div
-        className="
-          w-5 h-5
-          flex items-center justify-center
-          rounded-full
-          bg-interactive
-          text-fg
-          transition-all
-          group-hover:bg-accent
-          group-hover:text-white
-          shrink-0
-        "
-        aria-hidden="true"
-      >
-        <ArrowsIcon width={12} height={12} className="rotate-180" />
-      </div>
-      <span className="text-fg">Назад</span>
-    </button>
-  );
-}
-
 export function ResultsHeader({
   title,
   count,
-  backHref = '/',
-  onBack,
+  backHref,
   filters,
   className,
 }: ResultsHeaderProps) {
   return (
     <div className={className}>
-      {onBack ? <BackButton onBack={onBack} /> : <BackLink href={backHref} />}
+      <BackLink href={backHref} />
 
       {filters ? (
         <>

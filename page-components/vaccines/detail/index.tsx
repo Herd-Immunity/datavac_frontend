@@ -32,7 +32,7 @@ export default async function VaccineDetailPage({
 
   return (
     <div>
-      <BackLink href="/vaccines" label="Назад к вакцинам" className="mb-4" />
+      <BackLink className="mb-4" />
 
       <div className="flex items-start justify-between gap-6 mb-6">
         <div className="flex flex-col gap-1">

@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { SIDE_MENU_TABLET_LABEL_CLASS } from '@/shared/ui/SideMenu/nav-config'
 import { sideMenuFont } from '@/shared/ui/SideMenu/side-menu-font'
 
@@ -23,10 +26,20 @@ export type BackLinkProps = {
   className?: string
 }
 
-export function BackLink({ href = '/', label = 'Назад', className }: BackLinkProps) {
+export function BackLink({ href, label = 'Назад', className }: BackLinkProps) {
+  const router = useRouter()
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if(!href) {
+      e.preventDefault() 
+      window.history.length > 1 ? router.back() : router.push('/')           
+    }
+  }
+
   return (
     <Link
-      href={href}
+      href={href || '#'}
+      onClick = {handleClick}
       className={[
         sideMenuFont.className,
         SIDE_MENU_TABLET_LABEL_CLASS,
